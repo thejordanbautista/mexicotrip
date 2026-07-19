@@ -28,6 +28,6 @@ Without a token, the app shows the built-in fallback map so the itinerary and re
 - Build command: `npm run build`
 - Output directory: `dist`
 - Environment variable: `VITE_MAPBOX_TOKEN`
-- KV binding for shared state: `TRIP_STATE`
+- KV binding for shared state: create a KV namespace in Cloudflare and bind it to this Pages project as `TRIP_STATE`
 
 The Pages Function in `functions/api/state.js` uses that KV binding for checklist and saved-place sync.
