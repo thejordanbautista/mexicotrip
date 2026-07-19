@@ -6,17 +6,14 @@ import {
   CalendarDays,
   Check,
   ChevronDown,
-  Clock,
   Coffee,
   Crosshair,
   ExternalLink,
   Heart,
   Home,
-  Layers,
   Map,
   MapPin,
   Navigation,
-  Plus,
   Search,
   Sparkles,
   Star,
@@ -24,8 +21,7 @@ import {
   TramFront,
   Utensils,
   Wifi,
-  WifiOff,
-  X
+  WifiOff
 } from "lucide-react";
 import "./styles.css";
 
@@ -472,18 +468,9 @@ const categoryIcons = {
   sweet: Heart,
   parks: MapPin,
   rooftop: Navigation,
-  photo: Sparkles
+  photo: Sparkles,
+  search: Sparkles
 };
-
-const categories = [
-  { id: "all", label: "All", icon: Layers },
-  { id: "collectibles", label: "Collectibles", icon: Store },
-  { id: "markets", label: "Markets", icon: Store },
-  { id: "sweet", label: "Sweet", icon: Heart },
-  { id: "cafes", label: "Cafes", icon: Coffee },
-  { id: "rooftop", label: "Rooftop", icon: Navigation },
-  { id: "photo", label: "Photo", icon: Sparkles }
-];
 
 const initialState = {
   checked: {},
@@ -510,10 +497,10 @@ function distanceKm(a, b) {
 
 function travelAdvice(origin, place) {
   const km = distanceKm(origin, place);
-  if (place.id === "quetzalcoatl" || km > 9) return { mode: "Uber", icon: Navigation, detail: `${km.toFixed(1)} km away. Use Uber/taxi and build in traffic buffer.` };
-  if (km <= 1.2) return { mode: "Walk", icon: MapPin, detail: `${Math.round(km * 1000)} m away. Walkable if streets feel good.` };
-  if (km <= 5.5) return { mode: "Transit", icon: TramFront, detail: `${km.toFixed(1)} km away. Transit can work, Uber if tired or late.` };
-  return { mode: "Uber", icon: Navigation, detail: `${km.toFixed(1)} km away. Uber is the calmer move.` };
+  if (place.id === "quetzalcoatl" || km > 9) return { mode: "Uber", icon: Navigation, eta: `${Math.max(18, Math.round(km * 4))}-${Math.max(30, Math.round(km * 7))} min`, detail: `${km.toFixed(1)} km` };
+  if (km <= 1.2) return { mode: "Walk", icon: MapPin, eta: `${Math.max(2, Math.round(km * 13))} min`, detail: km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1)} km` };
+  if (km <= 5.5) return { mode: "Transit", icon: TramFront, eta: `${Math.max(12, Math.round(km * 7))}-${Math.max(18, Math.round(km * 10))} min`, detail: `${km.toFixed(1)} km` };
+  return { mode: "Uber", icon: Navigation, eta: `${Math.max(16, Math.round(km * 4))}-${Math.max(25, Math.round(km * 6))} min`, detail: `${km.toFixed(1)} km` };
 }
 
 function getMarkerPosition(place) {
@@ -532,36 +519,34 @@ function App() {
     return saved ? { ...initialState, ...JSON.parse(saved) } : initialState;
   });
   const [view, setView] = useState("map");
-  const [activeDay, setActiveDay] = useState("thu");
+  const [itineraryTab, setItineraryTab] = useState("thu");
+  const [mapDay, setMapDay] = useState("all");
   const [selectedPlaceId, setSelectedPlaceId] = useState("airbnb");
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("all");
   const [panelOpen, setPanelOpen] = useState(false);
-  const [addingSpot, setAddingSpot] = useState(false);
-  const [newSpot, setNewSpot] = useState({ name: "", note: "", category: "collectibles" });
   const [syncStatus, setSyncStatus] = useState("local");
   const [position, setPosition] = useState(null);
+  const [originMode, setOriginMode] = useState("home");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchStatus, setSearchStatus] = useState("idle");
 
   const allPlaces = useMemo(() => {
     const customPlaces = (state.customPlaces || []).map((place) => ({ ...place, custom: true }));
     return [base, ...places.filter((place) => place.id !== "airbnb"), ...customPlaces];
   }, [state.customPlaces]);
-  const active = days.find((day) => day.id === activeDay);
-  const selectedPlace = allPlaces.find((place) => place.id === selectedPlaceId) || base;
-  const origin = position || base;
+  const itineraryDay = days.find((day) => day.id === itineraryTab) || days[0];
+  const selectedPlace = [...allPlaces, ...searchResults].find((place) => place.id === selectedPlaceId) || base;
+  const origin = originMode === "current" && position ? position : base;
 
   const dayPlaces = useMemo(() => {
-    return allPlaces.filter((place) => active.focus.includes(place.id) || place.dayId === activeDay);
-  }, [active, activeDay, allPlaces]);
+    if (mapDay === "all") return allPlaces;
+    const day = days.find((item) => item.id === mapDay) || days[0];
+    return allPlaces.filter((place) => day.focus.includes(place.id) || place.dayId === mapDay);
+  }, [allPlaces, mapDay]);
 
-  const mapPlaces = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return dayPlaces.filter((place) => {
-      const categoryMatch = category === "all" || place.category === category || place.fit.includes(category);
-      const text = `${place.name} ${place.area} ${place.address} ${place.vibe} ${place.fit.join(" ")}`.toLowerCase();
-      return categoryMatch && (!q || text.includes(q));
-    });
-  }, [dayPlaces, category, query]);
+  const mapPlaces = dayPlaces;
+  const mapDisplayPlaces = useMemo(() => [...mapPlaces, ...searchResults], [mapPlaces, searchResults]);
+  const savedPlaces = useMemo(() => allPlaces.filter((place) => state.saved.includes(place.id)), [allPlaces, state.saved]);
 
   const selectedAdvice = travelAdvice(origin, selectedPlace);
 
@@ -571,6 +556,20 @@ function App() {
 
   useEffect(() => {
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    const update = (geo) => {
+      setPosition({ lat: geo.coords.latitude, lng: geo.coords.longitude, name: "Current location" });
+    };
+    navigator.geolocation.getCurrentPosition(update, () => {}, { enableHighAccuracy: true, timeout: 7000 });
+    const watchId = navigator.geolocation.watchPosition(update, () => {}, {
+      enableHighAccuracy: true,
+      maximumAge: 15000,
+      timeout: 10000
+    });
+    return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
   useEffect(() => {
@@ -610,33 +609,90 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const search = query.trim();
+    if (!search) {
+      setSearchResults([]);
+      setSearchStatus("idle");
+      return;
+    }
+
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      setSearchStatus("searching");
+      const proximity = `${origin.lng},${origin.lat}`;
+      try {
+        if (!MAPBOX_TOKEN) throw new Error("Missing Mapbox token");
+        const params = new URLSearchParams({
+          q: search,
+          access_token: MAPBOX_TOKEN,
+          bbox: "-99.30,19.32,-99.10,19.50",
+          proximity,
+          limit: "6",
+          language: "en"
+        });
+        const response = await fetch(`https://api.mapbox.com/search/geocode/v6/forward?${params}`);
+        if (!response.ok) throw new Error("Search failed");
+        const data = await response.json();
+        if (cancelled) return;
+        const results = (data.features || []).map((feature) => {
+          const [lng, lat] = feature.geometry?.coordinates || [base.lng, base.lat];
+          return {
+            id: `search-${feature.properties?.mapbox_id || feature.id || `${lng},${lat}`}`,
+            name: feature.properties?.name || feature.properties?.full_address || search,
+            area: feature.properties?.place_formatted || "Search result",
+            address: feature.properties?.full_address || feature.properties?.place_formatted || "Search result",
+            lat,
+            lng,
+            category: "search",
+            closing: "Search result",
+            vibe: "Found from map search.",
+            fit: ["search"],
+            searchResult: true
+          };
+        });
+        setSearchResults(results);
+        setSearchStatus(results.length ? "done" : "empty");
+      } catch {
+        if (cancelled) return;
+        const local = allPlaces.filter((place) => `${place.name} ${place.area} ${place.fit.join(" ")}`.toLowerCase().includes(search.toLowerCase()));
+        setSearchResults(local.slice(0, 6).map((place) => ({ ...place, searchResult: true })));
+        setSearchStatus(local.length ? "local" : "empty");
+      }
+    }, 350);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [query, origin.lat, origin.lng, allPlaces]);
+
+  useEffect(() => {
     if (!mapRef.current) return;
     markersRef.current.forEach((marker) => marker.remove());
-    markersRef.current = mapPlaces.map((place) => {
+    markersRef.current = mapDisplayPlaces.map((place) => {
       const element = document.createElement("button");
       element.className = `real-pin ${place.id === selectedPlaceId ? "selected" : ""} ${place.category}`;
       element.setAttribute("aria-label", place.name);
-      element.textContent = place.id === "airbnb" ? "H" : place.category === "scheduled" ? "★" : "•";
+      element.textContent = place.id === "airbnb" ? "H" : place.category === "scheduled" ? "★" : place.searchResult ? "?" : "•";
       element.addEventListener("click", () => {
         setSelectedPlaceId(place.id);
         setPanelOpen(true);
       });
       const marker = new mapboxgl.Marker(element)
         .setLngLat([place.lng, place.lat])
-        .setPopup(new mapboxgl.Popup({ offset: 18 }).setHTML(`<strong>${place.name}</strong><span>${place.area}<br>${place.closing}</span>`))
         .addTo(mapRef.current);
       return marker;
     });
-    if (mapPlaces.length) {
+    if (mapDisplayPlaces.length) {
       const bounds = new mapboxgl.LngLatBounds();
-      mapPlaces.forEach((place) => bounds.extend([place.lng, place.lat]));
+      mapDisplayPlaces.forEach((place) => bounds.extend([place.lng, place.lat]));
       mapRef.current.fitBounds(bounds, {
-        padding: { top: 100, bottom: panelOpen ? 280 : 120, left: 48, right: 48 },
+        padding: { top: 110, bottom: panelOpen ? 340 : 120, left: 48, right: 48 },
         maxZoom: 13.5,
         duration: 600
       });
     }
-  }, [mapPlaces, selectedPlaceId, panelOpen]);
+  }, [mapDisplayPlaces, selectedPlaceId, panelOpen]);
 
   async function push(nextState) {
     setState(nextState);
@@ -661,38 +717,30 @@ function App() {
   }
 
   function toggleSave(placeId) {
+    const place = [...allPlaces, ...searchResults].find((item) => item.id === placeId);
+    if (place?.searchResult && !state.saved.includes(place.id)) {
+      const savedPlace = {
+        ...place,
+        id: `custom-${Date.now()}`,
+        searchResult: false,
+        custom: true,
+        dayId: mapDay === "all" ? null : mapDay,
+        closing: "Verify hours",
+        vibe: "Saved from map search.",
+        fit: ["saved", "search"]
+      };
+      push({
+        ...state,
+        saved: [...new Set([...(state.saved || []), savedPlace.id])],
+        customPlaces: [...(state.customPlaces || []), savedPlace],
+        updatedAt: Date.now()
+      });
+      setSelectedPlaceId(savedPlace.id);
+      return;
+    }
+
     const saved = state.saved.includes(placeId) ? state.saved.filter((id) => id !== placeId) : [...state.saved, placeId];
     push({ ...state, saved, updatedAt: Date.now() });
-  }
-
-  function addSpot(event) {
-    event.preventDefault();
-    const name = newSpot.name.trim();
-    if (!name) return;
-    const source = position || selectedPlace || base;
-    const customPlace = {
-      id: `custom-${Date.now()}`,
-      name,
-      area: active.label,
-      address: position ? "Saved from current position" : `Saved near ${selectedPlace.name}`,
-      lat: source.lat,
-      lng: source.lng,
-      category: newSpot.category,
-      closing: "Verify hours",
-      vibe: newSpot.note.trim() || "Found during the trip. Check it if you are nearby.",
-      fit: ["saved", "recommendation"],
-      dayId: activeDay
-    };
-    push({
-      ...state,
-      saved: [...new Set([...(state.saved || []), customPlace.id])],
-      customPlaces: [...(state.customPlaces || []), customPlace],
-      updatedAt: Date.now()
-    });
-    setSelectedPlaceId(customPlace.id);
-    setNewSpot({ name: "", note: "", category: "collectibles" });
-    setAddingSpot(false);
-    setPanelOpen(true);
   }
 
   function locateMe() {
@@ -701,6 +749,7 @@ function App() {
       (geo) => {
         const next = { lat: geo.coords.latitude, lng: geo.coords.longitude, name: "Current position" };
         setPosition(next);
+        setOriginMode("current");
         if (mapRef.current) mapRef.current.flyTo({ center: [next.lng, next.lat], zoom: 13.5 });
       },
       () => setPosition(base),
@@ -713,17 +762,22 @@ function App() {
     return `${tasks.filter((id) => state.checked[id]).length}/${tasks.length}`;
   }
 
+  const mapFilterDays = [{ id: "all", short: "All", label: "All trip" }, ...days];
+  const activeMapLabel = mapFilterDays.find((day) => day.id === mapDay)?.label || "All trip";
+
   return (
     <main className={`app-shell ${view === "map" ? "map-mode" : "itinerary-mode"}`}>
       <header className="app-header">
         <div>
           <p>Jordan & Alejandra · CDMX</p>
-          <h1>{view === "map" ? "Trip map" : active.mood}</h1>
+          <h1>{view === "map" ? "Trip map" : "Itinerary"}</h1>
         </div>
-        <div className={`sync ${syncStatus}`}>
-          {syncStatus === "online" ? <Wifi size={15} /> : <WifiOff size={15} />}
-          <span>{syncStatus === "online" ? "Synced" : "Local"}</span>
-        </div>
+        {view === "map" && (
+          <div className={`sync ${syncStatus}`}>
+            {syncStatus === "online" ? <Wifi size={15} /> : <WifiOff size={15} />}
+            <span>{syncStatus === "online" ? "Synced" : "Local"}</span>
+          </div>
+        )}
       </header>
 
       <nav className="view-tabs" aria-label="App views">
@@ -741,74 +795,74 @@ function App() {
         <section className="screen itinerary-screen">
           <div className="day-switcher">
             {days.map((day) => (
-              <button key={day.id} className={day.id === activeDay ? "active" : ""} onClick={() => setActiveDay(day.id)}>
+              <button key={day.id} className={day.id === itineraryTab ? "active" : ""} onClick={() => setItineraryTab(day.id)}>
                 <span>{day.short}</span>
                 <small>{dayProgress(day)}</small>
               </button>
             ))}
+            <button className={itineraryTab === "saved" ? "active" : ""} onClick={() => setItineraryTab("saved")}>
+              <span>Saved</span>
+              <small>{savedPlaces.length}</small>
+            </button>
           </div>
 
-          <div className="day-heading">
-            <p>{active.label} · {active.anchor}</p>
-            <h2>{active.mood}</h2>
-          </div>
+          {itineraryTab === "saved" ? (
+            <div className="simple-list">
+              <h2>Saved places</h2>
+              {savedPlaces.length === 0 ? (
+                <p className="empty-state">Heart places on the map to keep them here.</p>
+              ) : savedPlaces.map((place) => (
+                <button key={place.id} onClick={() => toggleSave(place.id)}>
+                  <span><Heart size={15} fill="currentColor" /></span>
+                  <strong>{place.id === "airbnb" ? "Home" : place.name}</strong>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className="day-heading simple">
+                <p>{itineraryDay.label}</p>
+                <h2>{itineraryDay.mood}</h2>
+              </div>
 
-          <div className="day-scroll">
-            {active.blocks.map((block) => (
-              <article className="time-card" key={block.id}>
-                <header>
-                  <span>{block.time}</span>
-                  <strong>{block.recommended}</strong>
-                </header>
-                <h3>{block.title}</h3>
-                <p className="closing"><Clock size={15} /> {block.closing}</p>
-                <div className="place-row">
-                  {block.placeIds.map((id) => {
-                    const place = allPlaces.find((item) => item.id === id);
-                    if (!place) return null;
-                    return (
-                      <button
-                        key={id}
-                        onClick={() => {
-                          setSelectedPlaceId(id);
-                          setView("map");
-                        }}
-                      >
-                        <MapPin size={14} />
-                        {place.name}
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="checks">
-                  {block.tasks.map((task) => {
-                    const id = `${block.id}:${task}`;
-                    return (
-                      <label key={id} className={state.checked[id] ? "done" : ""}>
-                        <input type="checkbox" checked={Boolean(state.checked[id])} onChange={() => toggleTask(block.id, task)} />
-                        <span><Check size={14} /></span>
-                        {task}
-                      </label>
-                    );
-                  })}
-                </div>
-              </article>
-            ))}
-          </div>
+              <div className="simple-list">
+                {itineraryDay.blocks.map((block) => (
+                  <section key={block.id}>
+                    <h3>{block.time}</h3>
+                    {block.tasks.map((task) => {
+                      const id = `${block.id}:${task}`;
+                      return (
+                        <label key={id} className={state.checked[id] ? "done" : ""}>
+                          <input type="checkbox" checked={Boolean(state.checked[id])} onChange={() => toggleTask(block.id, task)} />
+                          <span><Check size={14} /></span>
+                          <strong>{task}</strong>
+                        </label>
+                      );
+                    })}
+                  </section>
+                ))}
+              </div>
+            </>
+          )}
         </section>
       ) : (
         <section className="screen map-screen">
           <div className="map-toolbar">
             <div className="day-pills">
-              {days.map((day) => (
-                <button key={day.id} className={day.id === activeDay ? "active" : ""} onClick={() => setActiveDay(day.id)}>
+              {mapFilterDays.map((day) => (
+                <button key={day.id} className={day.id === mapDay ? "active" : ""} onClick={() => setMapDay(day.id)}>
                   {day.short}
                 </button>
               ))}
             </div>
-            <button className="locate" onClick={locateMe} aria-label="Use current position">
-              <Crosshair size={18} />
-            </button>
+            <div className="origin-toggle">
+              <button className={originMode === "home" ? "active" : ""} onClick={() => setOriginMode("home")} aria-label="Use home">
+                <Home size={16} />
+              </button>
+              <button className={originMode === "current" ? "active" : ""} onClick={locateMe} aria-label="Use current position">
+                <Crosshair size={16} />
+              </button>
+            </div>
           </div>
 
           {MAPBOX_TOKEN ? (
@@ -819,7 +873,7 @@ function App() {
               <div className="map-label roma">Roma</div>
               <div className="map-label coyo">Coyoacan</div>
               <div className="map-label nau">Naucalpan</div>
-              {mapPlaces.map((place) => (
+              {mapDisplayPlaces.map((place) => (
                 <button
                   key={place.id}
                   className={`fallback-pin ${place.id === selectedPlaceId ? "selected" : ""} ${place.category}`}
@@ -839,95 +893,62 @@ function App() {
           <aside className={`map-drawer ${panelOpen ? "open" : "closed"}`}>
             <button className="drawer-handle" onClick={() => setPanelOpen(!panelOpen)}>
               <ChevronDown size={18} />
-              <span>{panelOpen ? `${active.label}: ${mapPlaces.length} mapped spots` : `${active.short}: open spots`}</span>
+              <span>{panelOpen ? `${activeMapLabel}: ${mapPlaces.length} spots` : `${activeMapLabel}: spots`}</span>
             </button>
 
             <div className="drawer-body">
-              <div className="quick-actions">
-                <button onClick={locateMe}>
-                  <Crosshair size={16} />
-                  Use my location
+              <div className="compact-place">
+                <div className="place-icon">
+                  {selectedPlace.id === "airbnb" ? <Home size={17} /> : React.createElement(categoryIcons[selectedPlace.category] || MapPin, { size: 17 })}
+                </div>
+                <div>
+                  <strong>{selectedPlace.id === "airbnb" ? "Home" : selectedPlace.name}</strong>
+                  <span>{selectedAdvice.eta} · {selectedAdvice.mode} from {originMode === "current" && position ? "Here" : "Home"}</span>
+                </div>
+                <button className="icon-button" onClick={() => toggleSave(selectedPlace.id)} aria-label="Save place">
+                  <Heart size={17} fill={state.saved.includes(selectedPlace.id) ? "currentColor" : "none"} />
                 </button>
-                <button onClick={() => setAddingSpot(true)}>
-                  <Plus size={16} />
-                  Add spot
-                </button>
+                <a className="tiny-directions" href={mapsUrl(selectedPlace)} target="_blank" rel="noreferrer" aria-label="Open directions">
+                  <ExternalLink size={16} />
+                </a>
               </div>
-
-              {addingSpot ? (
-                <form className="add-spot" onSubmit={addSpot}>
-                  <header>
-                    <strong>Add a find to {active.short}</strong>
-                    <button type="button" onClick={() => setAddingSpot(false)} aria-label="Cancel add spot">
-                      <X size={17} />
-                    </button>
-                  </header>
-                  <input
-                    value={newSpot.name}
-                    onChange={(event) => setNewSpot((draft) => ({ ...draft, name: event.target.value }))}
-                    placeholder="Place name"
-                  />
-                  <input
-                    value={newSpot.note}
-                    onChange={(event) => setNewSpot((draft) => ({ ...draft, note: event.target.value }))}
-                    placeholder="Why it looks good"
-                  />
-                  <select value={newSpot.category} onChange={(event) => setNewSpot((draft) => ({ ...draft, category: event.target.value }))}>
-                    <option value="collectibles">Collectibles</option>
-                    <option value="markets">Market</option>
-                    <option value="cafes">Cafe</option>
-                    <option value="food">Food</option>
-                    <option value="sweet">Sweet</option>
-                    <option value="rooftop">Rooftop</option>
-                    <option value="photo">Photo</option>
-                  </select>
-                  <button type="submit">Save to map</button>
-                  <small>{position ? "Uses your current location." : `Uses the selected spot area: ${selectedPlace.name}.`}</small>
-                </form>
-              ) : (
-                <>
-                  <div className="selected-card">
-                    <div>
-                      <p>{selectedPlace.area}</p>
-                      <h2>{selectedPlace.name}</h2>
-                    </div>
-                    <button className="icon-button" onClick={() => toggleSave(selectedPlace.id)} aria-label="Save place">
-                      <Heart size={18} fill={state.saved.includes(selectedPlace.id) ? "currentColor" : "none"} />
-                    </button>
-                  </div>
-
-                  <p className="vibe">{selectedPlace.vibe}</p>
-                  <div className="travel-card">
-                    <selectedAdvice.icon size={18} />
-                    <div>
-                      <strong>{selectedAdvice.mode} from {position ? "your current position" : "the Airbnb"}</strong>
-                      <span>{selectedAdvice.detail}</span>
-                    </div>
-                  </div>
-                  <div className="meta-line"><Clock size={15} /> {selectedPlace.closing}</div>
-                  <div className="meta-line"><MapPin size={15} /> {selectedPlace.address}</div>
-                  <a className="maps-link" href={mapsUrl(selectedPlace)} target="_blank" rel="noreferrer">
-                    Open directions <ExternalLink size={15} />
-                  </a>
-                </>
-              )}
 
               <label className="search-box">
                 <Search size={17} />
-                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cards, Hello Kitty, rooftop..." />
+                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search nearby places..." />
               </label>
-              <div className="chips">
-                {categories.map(({ id, label, icon: Icon }) => (
-                  <button key={id} className={category === id ? "active" : ""} onClick={() => setCategory(id)}>
-                    <Icon size={14} />
-                    {label}
-                  </button>
-                ))}
-              </div>
+
               <div className="recommendations">
+                {query.trim() && (
+                  <div className="result-section">
+                    <p>{searchStatus === "searching" ? "Searching..." : "Search results"}</p>
+                    {searchResults.length === 0 && searchStatus !== "searching" ? (
+                      <div className="empty-state">No places found yet.</div>
+                    ) : searchResults.map((place) => {
+                      const Icon = categoryIcons[place.category] || Sparkles;
+                      const advice = travelAdvice(origin, place);
+                      return (
+                        <button key={place.id} className={place.id === selectedPlaceId ? "active" : ""} onClick={() => setSelectedPlaceId(place.id)}>
+                          <Icon size={17} />
+                          <span>
+                            <strong>{place.name}</strong>
+                            <small>{advice.eta} · {advice.mode} · {place.area}</small>
+                          </span>
+                          <i onClick={(event) => {
+                            event.stopPropagation();
+                            toggleSave(place.id);
+                          }}>
+                            <Heart size={16} fill={state.saved.includes(place.id) ? "currentColor" : "none"} />
+                          </i>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
                 {mapPlaces.length === 0 ? (
                   <div className="empty-state">
-                    No mapped matches for this day. Clear search or switch days.
+                    No mapped spots for this filter.
                   </div>
                 ) : mapPlaces.map((place) => {
                   const Icon = categoryIcons[place.category] || Star;
@@ -943,9 +964,15 @@ function App() {
                     >
                       <Icon size={17} />
                       <span>
-                        <strong>{place.name}</strong>
-                        <small>{advice.mode} · {place.closing}</small>
+                        <strong>{place.id === "airbnb" ? "Home" : place.name}</strong>
+                        <small>{advice.eta} · {advice.mode} from {originMode === "current" && position ? "Here" : "Home"}</small>
                       </span>
+                      <i onClick={(event) => {
+                        event.stopPropagation();
+                        toggleSave(place.id);
+                      }}>
+                        <Heart size={16} fill={state.saved.includes(place.id) ? "currentColor" : "none"} />
+                      </i>
                     </button>
                   );
                 })}
