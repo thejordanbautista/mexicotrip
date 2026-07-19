@@ -1,8 +1,0 @@
-{
-  "name": "jordan-alejandra-cdmx",
-  "pages_build_output_dir": "./dist",
-  "compatibility_date": "2026-07-19",
-  "build": {
-    "command": "npm run build"
-  }
-}
