@@ -16,6 +16,7 @@ import {
   Map,
   MapPin,
   Navigation,
+  Plus,
   Search,
   Sparkles,
   Star,
@@ -23,7 +24,8 @@ import {
   TramFront,
   Utensils,
   Wifi,
-  WifiOff
+  WifiOff,
+  X
 } from "lucide-react";
 import "./styles.css";
 
@@ -486,9 +488,10 @@ const categories = [
 const initialState = {
   checked: {},
   saved: ["airbnb", "frida", "quetzalcoatl", "simicasa", "cosmopolis"],
-  notes: {}
+  notes: {},
+  customPlaces: []
 };
-const storageKey = "cdmx-trip-state-v2";
+const storageKey = "cdmx-trip-state-v3";
 
 function mapsUrl(place) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${place.name} ${place.address} Mexico City`)}`;
@@ -533,18 +536,23 @@ function App() {
   const [selectedPlaceId, setSelectedPlaceId] = useState("airbnb");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
-  const [panelOpen, setPanelOpen] = useState(true);
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [addingSpot, setAddingSpot] = useState(false);
+  const [newSpot, setNewSpot] = useState({ name: "", note: "", category: "collectibles" });
   const [syncStatus, setSyncStatus] = useState("local");
   const [position, setPosition] = useState(null);
 
-  const allPlaces = useMemo(() => [base, ...places.filter((place) => place.id !== "airbnb")], []);
+  const allPlaces = useMemo(() => {
+    const customPlaces = (state.customPlaces || []).map((place) => ({ ...place, custom: true }));
+    return [base, ...places.filter((place) => place.id !== "airbnb"), ...customPlaces];
+  }, [state.customPlaces]);
   const active = days.find((day) => day.id === activeDay);
   const selectedPlace = allPlaces.find((place) => place.id === selectedPlaceId) || base;
   const origin = position || base;
 
   const dayPlaces = useMemo(() => {
-    return allPlaces.filter((place) => active.focus.includes(place.id));
-  }, [active, allPlaces]);
+    return allPlaces.filter((place) => active.focus.includes(place.id) || place.dayId === activeDay);
+  }, [active, activeDay, allPlaces]);
 
   const mapPlaces = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -622,9 +630,13 @@ function App() {
     if (mapPlaces.length) {
       const bounds = new mapboxgl.LngLatBounds();
       mapPlaces.forEach((place) => bounds.extend([place.lng, place.lat]));
-      mapRef.current.fitBounds(bounds, { padding: { top: 80, bottom: 250, left: 48, right: 48 }, maxZoom: 13.5, duration: 600 });
+      mapRef.current.fitBounds(bounds, {
+        padding: { top: 100, bottom: panelOpen ? 280 : 120, left: 48, right: 48 },
+        maxZoom: 13.5,
+        duration: 600
+      });
     }
-  }, [mapPlaces, selectedPlaceId]);
+  }, [mapPlaces, selectedPlaceId, panelOpen]);
 
   async function push(nextState) {
     setState(nextState);
@@ -651,6 +663,36 @@ function App() {
   function toggleSave(placeId) {
     const saved = state.saved.includes(placeId) ? state.saved.filter((id) => id !== placeId) : [...state.saved, placeId];
     push({ ...state, saved, updatedAt: Date.now() });
+  }
+
+  function addSpot(event) {
+    event.preventDefault();
+    const name = newSpot.name.trim();
+    if (!name) return;
+    const source = position || selectedPlace || base;
+    const customPlace = {
+      id: `custom-${Date.now()}`,
+      name,
+      area: active.label,
+      address: position ? "Saved from current position" : `Saved near ${selectedPlace.name}`,
+      lat: source.lat,
+      lng: source.lng,
+      category: newSpot.category,
+      closing: "Verify hours",
+      vibe: newSpot.note.trim() || "Found during the trip. Check it if you are nearby.",
+      fit: ["saved", "recommendation"],
+      dayId: activeDay
+    };
+    push({
+      ...state,
+      saved: [...new Set([...(state.saved || []), customPlace.id])],
+      customPlaces: [...(state.customPlaces || []), customPlace],
+      updatedAt: Date.now()
+    });
+    setSelectedPlaceId(customPlace.id);
+    setNewSpot({ name: "", note: "", category: "collectibles" });
+    setAddingSpot(false);
+    setPanelOpen(true);
   }
 
   function locateMe() {
@@ -797,63 +839,117 @@ function App() {
           <aside className={`map-drawer ${panelOpen ? "open" : "closed"}`}>
             <button className="drawer-handle" onClick={() => setPanelOpen(!panelOpen)}>
               <ChevronDown size={18} />
-              <span>{active.label}: {mapPlaces.length} mapped spots</span>
+              <span>{panelOpen ? `${active.label}: ${mapPlaces.length} mapped spots` : `${active.short}: open spots`}</span>
             </button>
 
-            <div className="selected-card">
-              <div>
-                <p>{selectedPlace.area}</p>
-                <h2>{selectedPlace.name}</h2>
-              </div>
-              <button className="icon-button" onClick={() => toggleSave(selectedPlace.id)} aria-label="Save place">
-                <Heart size={18} fill={state.saved.includes(selectedPlace.id) ? "currentColor" : "none"} />
-              </button>
-            </div>
-
-            <p className="vibe">{selectedPlace.vibe}</p>
-            <div className="travel-card">
-              <selectedAdvice.icon size={18} />
-              <div>
-                <strong>{selectedAdvice.mode} from {position ? "your current position" : "the Airbnb"}</strong>
-                <span>{selectedAdvice.detail}</span>
-              </div>
-            </div>
-            <div className="meta-line"><Clock size={15} /> {selectedPlace.closing}</div>
-            <div className="meta-line"><MapPin size={15} /> {selectedPlace.address}</div>
-            <a className="maps-link" href={mapsUrl(selectedPlace)} target="_blank" rel="noreferrer">
-              Open directions <ExternalLink size={15} />
-            </a>
-
-            <label className="search-box">
-              <Search size={17} />
-              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cards, Hello Kitty, rooftop..." />
-            </label>
-            <div className="chips">
-              {categories.map(({ id, label, icon: Icon }) => (
-                <button key={id} className={category === id ? "active" : ""} onClick={() => setCategory(id)}>
-                  <Icon size={14} />
-                  {label}
+            <div className="drawer-body">
+              <div className="quick-actions">
+                <button onClick={locateMe}>
+                  <Crosshair size={16} />
+                  Use my location
                 </button>
-              ))}
-            </div>
-            <div className="recommendations">
-              {mapPlaces.length === 0 ? (
-                <div className="empty-state">
-                  No mapped matches for this day. Clear search or switch days.
-                </div>
-              ) : mapPlaces.map((place) => {
-                const Icon = categoryIcons[place.category] || Star;
-                const advice = travelAdvice(origin, place);
-                return (
-                  <button key={place.id} className={place.id === selectedPlaceId ? "active" : ""} onClick={() => setSelectedPlaceId(place.id)}>
-                    <Icon size={17} />
-                    <span>
-                      <strong>{place.name}</strong>
-                      <small>{advice.mode} · {place.closing}</small>
-                    </span>
+                <button onClick={() => setAddingSpot(true)}>
+                  <Plus size={16} />
+                  Add spot
+                </button>
+              </div>
+
+              {addingSpot ? (
+                <form className="add-spot" onSubmit={addSpot}>
+                  <header>
+                    <strong>Add a find to {active.short}</strong>
+                    <button type="button" onClick={() => setAddingSpot(false)} aria-label="Cancel add spot">
+                      <X size={17} />
+                    </button>
+                  </header>
+                  <input
+                    value={newSpot.name}
+                    onChange={(event) => setNewSpot((draft) => ({ ...draft, name: event.target.value }))}
+                    placeholder="Place name"
+                  />
+                  <input
+                    value={newSpot.note}
+                    onChange={(event) => setNewSpot((draft) => ({ ...draft, note: event.target.value }))}
+                    placeholder="Why it looks good"
+                  />
+                  <select value={newSpot.category} onChange={(event) => setNewSpot((draft) => ({ ...draft, category: event.target.value }))}>
+                    <option value="collectibles">Collectibles</option>
+                    <option value="markets">Market</option>
+                    <option value="cafes">Cafe</option>
+                    <option value="food">Food</option>
+                    <option value="sweet">Sweet</option>
+                    <option value="rooftop">Rooftop</option>
+                    <option value="photo">Photo</option>
+                  </select>
+                  <button type="submit">Save to map</button>
+                  <small>{position ? "Uses your current location." : `Uses the selected spot area: ${selectedPlace.name}.`}</small>
+                </form>
+              ) : (
+                <>
+                  <div className="selected-card">
+                    <div>
+                      <p>{selectedPlace.area}</p>
+                      <h2>{selectedPlace.name}</h2>
+                    </div>
+                    <button className="icon-button" onClick={() => toggleSave(selectedPlace.id)} aria-label="Save place">
+                      <Heart size={18} fill={state.saved.includes(selectedPlace.id) ? "currentColor" : "none"} />
+                    </button>
+                  </div>
+
+                  <p className="vibe">{selectedPlace.vibe}</p>
+                  <div className="travel-card">
+                    <selectedAdvice.icon size={18} />
+                    <div>
+                      <strong>{selectedAdvice.mode} from {position ? "your current position" : "the Airbnb"}</strong>
+                      <span>{selectedAdvice.detail}</span>
+                    </div>
+                  </div>
+                  <div className="meta-line"><Clock size={15} /> {selectedPlace.closing}</div>
+                  <div className="meta-line"><MapPin size={15} /> {selectedPlace.address}</div>
+                  <a className="maps-link" href={mapsUrl(selectedPlace)} target="_blank" rel="noreferrer">
+                    Open directions <ExternalLink size={15} />
+                  </a>
+                </>
+              )}
+
+              <label className="search-box">
+                <Search size={17} />
+                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cards, Hello Kitty, rooftop..." />
+              </label>
+              <div className="chips">
+                {categories.map(({ id, label, icon: Icon }) => (
+                  <button key={id} className={category === id ? "active" : ""} onClick={() => setCategory(id)}>
+                    <Icon size={14} />
+                    {label}
                   </button>
-                );
-              })}
+                ))}
+              </div>
+              <div className="recommendations">
+                {mapPlaces.length === 0 ? (
+                  <div className="empty-state">
+                    No mapped matches for this day. Clear search or switch days.
+                  </div>
+                ) : mapPlaces.map((place) => {
+                  const Icon = categoryIcons[place.category] || Star;
+                  const advice = travelAdvice(origin, place);
+                  return (
+                    <button
+                      key={place.id}
+                      className={place.id === selectedPlaceId ? "active" : ""}
+                      onClick={() => {
+                        setSelectedPlaceId(place.id);
+                        setPanelOpen(true);
+                      }}
+                    >
+                      <Icon size={17} />
+                      <span>
+                        <strong>{place.name}</strong>
+                        <small>{advice.mode} · {place.closing}</small>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </aside>
         </section>

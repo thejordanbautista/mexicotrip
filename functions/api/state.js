@@ -15,7 +15,8 @@ export async function onRequestPut(context) {
     updatedAt: Date.now(),
     checked: incoming.checked || {},
     saved: Array.isArray(incoming.saved) ? incoming.saved : [],
-    notes: incoming.notes || {}
+    notes: incoming.notes || {},
+    customPlaces: Array.isArray(incoming.customPlaces) ? incoming.customPlaces : []
   };
 
   await context.env.TRIP_STATE.put(STATE_KEY, JSON.stringify(state));
@@ -24,9 +25,9 @@ export async function onRequestPut(context) {
 
 async function readState(env) {
   if (!env.TRIP_STATE) {
-    return { updatedAt: 0, checked: {}, saved: [], notes: {} };
+    return { updatedAt: 0, checked: {}, saved: [], notes: {}, customPlaces: [] };
   }
 
   const saved = await env.TRIP_STATE.get(STATE_KEY, "json");
-  return saved || { updatedAt: 0, checked: {}, saved: [], notes: {} };
+  return saved || { updatedAt: 0, checked: {}, saved: [], notes: {}, customPlaces: [] };
 }

@@ -15,7 +15,7 @@ async function readState() {
   try {
     return JSON.parse(await fs.readFile(statePath, "utf8"));
   } catch {
-    return { updatedAt: 0, checked: {}, saved: [], notes: {} };
+    return { updatedAt: 0, checked: {}, saved: [], notes: {}, customPlaces: [] };
   }
 }
 
@@ -29,7 +29,8 @@ app.put("/api/state", async (req, res) => {
     updatedAt: Date.now(),
     checked: incoming.checked || {},
     saved: Array.isArray(incoming.saved) ? incoming.saved : [],
-    notes: incoming.notes || {}
+    notes: incoming.notes || {},
+    customPlaces: Array.isArray(incoming.customPlaces) ? incoming.customPlaces : []
   };
   await fs.writeFile(statePath, JSON.stringify(state, null, 2));
   res.json(state);
