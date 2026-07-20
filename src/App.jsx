@@ -37,7 +37,8 @@ const base = {
   category: "base",
   closing: "Home base",
   vibe: "Reset point between long walks, markets, museum slots, and late snacks.",
-  fit: ["walkable", "reset", "wifi"]
+  fit: ["walkable", "reset", "wifi"],
+  photo: "https://images.unsplash.com/photo-1512813195386-6cf811ad3542?auto=format&fit=crop&w=900&q=70"
 };
 
 const places = [
@@ -52,7 +53,8 @@ const places = [
     closing: "Fri closes 6:00 PM; July evening program may run to 9:00 PM with specific ticket",
     vibe: "Friday 11:15 AM anchor. Casa Azul, photos, garden, Coyoacan wander after.",
     fit: ["museum", "photo", "anchor"],
-    source: "https://www.museofridakahlo.org.mx/?lang=en"
+    source: "https://www.museofridakahlo.org.mx/?lang=en",
+    photo: "https://images.unsplash.com/photo-1585464231875-d9ef1f5ad396?auto=format&fit=crop&w=900&q=70"
   },
   {
     id: "quetzalcoatl",
@@ -65,7 +67,62 @@ const places = [
     closing: "Guided visits only; Saturday slots listed at 10:30 AM and 1:00 PM",
     vibe: "Saturday 1:15 PM anchor. Surreal organic architecture and big photo payoff.",
     fit: ["architecture", "photo", "anchor"],
-    source: "https://www.parquequetzalcoatl.com/"
+    source: "https://www.parquequetzalcoatl.com/",
+    photo: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=900&q=70"
+  },
+  {
+    id: "anthropology",
+    name: "Museo Nacional de Antropologia",
+    area: "Chapultepec",
+    address: "Av. Paseo de la Reforma s/n, Chapultepec",
+    lat: 19.426,
+    lng: -99.1862,
+    category: "scheduled",
+    closing: "Tue-Sun closes 5:00 PM; closed Mondays",
+    vibe: "Thursday anchor inside Bosque Chapultepec. Big museum, easy to pair with park wandering.",
+    fit: ["museum", "chapultepec", "anchor"],
+    photo: "https://images.unsplash.com/photo-1601581875309-fafbf2d3ed3a?auto=format&fit=crop&w=900&q=70"
+  },
+  {
+    id: "chapultepec-zoo",
+    name: "Zoologico de Chapultepec",
+    area: "Chapultepec",
+    address: "Primera Seccion del Bosque de Chapultepec",
+    lat: 19.4233,
+    lng: -99.1894,
+    category: "parks",
+    closing: "Tue-Sun 9:00 AM-4:30 PM; closed Mondays",
+    vibe: "Free zoo in Chapultepec. Good if you want a low-pressure park add-on.",
+    fit: ["zoo", "free", "chapultepec"],
+    source: "https://data.sedema.cdmx.gob.mx/zoo_chapultepec/index.php/informacion-para-el-visitante/horarios",
+    photo: "https://images.unsplash.com/photo-1534567110243-8875d64ca8ff?auto=format&fit=crop&w=900&q=70"
+  },
+  {
+    id: "biblioteca-vasconcelos",
+    name: "Biblioteca Vasconcelos",
+    area: "Buenavista",
+    address: "Eje 1 Norte S/N, Buenavista",
+    lat: 19.4475,
+    lng: -99.1517,
+    category: "photo",
+    closing: "Usually closes 7:30 PM; verify day-of",
+    vibe: "Free floating-books photo spot. Strong architecture stop near Buenavista.",
+    fit: ["free", "photo", "architecture"],
+    photo: "https://images.unsplash.com/photo-1521587760476-6c12a4b040da?auto=format&fit=crop&w=900&q=70"
+  },
+  {
+    id: "casa-snoopy",
+    name: "Casa Snoopy Condesa",
+    area: "Condesa/Escandon",
+    address: "Av. Nuevo Leon 247, Escandon II",
+    lat: 19.4039,
+    lng: -99.1727,
+    category: "cafes",
+    closing: "Daily 9:30 AM-8:00 PM",
+    vibe: "Official Peanuts cafe with Snoopy desserts, coffee, and photo-friendly theme details.",
+    fit: ["snoopy", "cafe", "sweet", "photo"],
+    source: "https://www.opentable.com.mx/r/casa-snoopy-condesa-ciudad-de-mexico",
+    photo: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=900&q=70"
   },
   {
     id: "simicasa",
@@ -78,7 +135,8 @@ const places = [
     closing: "Fri-Sun closes 6:00 PM; Tue-Thu closes 5:00 PM",
     vibe: "Dr. Simi origin story, Simiverso, cafe, souvenir shop.",
     fit: ["dr simi", "souvenirs", "cute", "museum"],
-    source: "https://sic.cultura.gob.mx/ficha.php?table=museo&table_id=2502"
+    source: "https://sic.cultura.gob.mx/ficha.php?table=museo&table_id=2502",
+    photo: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=900&q=70"
   },
   {
     id: "panini",
@@ -91,7 +149,8 @@ const places = [
     closing: "Daily closes 8:00 PM",
     vibe: "Cards, stickers, manga, comics. Fast collectible mission from Roma.",
     fit: ["trading cards", "stickers", "comics", "quick stop"],
-    source: "https://www.findglocal.com/MX/Mexico-City/1980328012196271/Tienda-Panini-Plaza-Cuauht%C3%A9moc"
+    source: "https://www.findglocal.com/MX/Mexico-City/1980328012196271/Tienda-Panini-Plaza-Cuauht%C3%A9moc",
+    photo: "https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?auto=format&fit=crop&w=900&q=70"
   },
   {
     id: "pokeshop",
@@ -104,7 +163,8 @@ const places = [
     closing: "Reported Thu 12:00-7:00 PM; verify before crossing town",
     vibe: "Pokemon cards, imports, singles, plushies, and collector-shop browsing.",
     fit: ["trading cards", "pokemon", "collectibles"],
-    source: "https://www.corner.inc/place/pchCMe1cRNmj"
+    source: "https://www.corner.inc/place/pchCMe1cRNmj",
+    photo: "https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=900&q=70"
   },
   {
     id: "hello-kitty-cafe",
@@ -117,7 +177,8 @@ const places = [
     closing: "Daily closes 7:30 PM",
     vibe: "Sanrio-coded dessert stop. Best with Soumaya/Jumex or Polanco wandering.",
     fit: ["hello kitty", "sweet treats", "cute"],
-    source: "https://hellokitty.cafe/cart/"
+    source: "https://hellokitty.cafe/cart/",
+    photo: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=900&q=70"
   },
   {
     id: "kawaii-roma",
@@ -130,7 +191,62 @@ const places = [
     closing: "Reported daily closes 6:00 PM",
     vibe: "Cute home goods and Sanrio-adjacent finds right near your base.",
     fit: ["hello kitty", "kawaii", "trinkets", "walkable"],
-    source: "https://www.chilango.com/shopping/lugares-kawaii-en-la-cdmx/amp/"
+    source: "https://www.chilango.com/shopping/lugares-kawaii-en-la-cdmx/amp/",
+    photo: "https://images.unsplash.com/photo-1512909006721-3d6018887383?auto=format&fit=crop&w=900&q=70"
+  },
+  {
+    id: "mibimbo",
+    name: "MiBIMBO Museo Interactivo",
+    area: "Centro Historico",
+    address: "Isabel La Catolica 51, Centro",
+    lat: 19.4318,
+    lng: -99.1365,
+    category: "photo",
+    closing: "Tue-Fri 9:00 AM-6:00 PM; Sat-Sun 10:00 AM-7:00 PM",
+    vibe: "Bimbo history museum in Centro. Fun branded stop if you are nearby.",
+    fit: ["bimbo", "museum", "cute", "centro"],
+    source: "https://www.grupobimbo.com/en/node/2059",
+    photo: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=900&q=70"
+  },
+  {
+    id: "roma-bars",
+    name: "Roma Norte bars",
+    area: "Roma Norte",
+    address: "Roma Norte, CDMX",
+    lat: 19.4191,
+    lng: -99.1647,
+    category: "food",
+    closing: "Friday 10:00 PM plan",
+    vibe: "Flexible nightlife anchor around Roma Norte for Friday night.",
+    fit: ["bars", "night", "roma"],
+    photo: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=900&q=70"
+  },
+  {
+    id: "romantic-date",
+    name: "Romantic date",
+    area: "CDMX",
+    address: "Pick from approved recommendations",
+    lat: 19.421,
+    lng: -99.168,
+    category: "food",
+    closing: "Saturday evening",
+    vibe: "Placeholder for the date spot you approve from recommendations.",
+    fit: ["date", "dinner", "romantic"],
+    photo: "https://images.unsplash.com/photo-1529516548873-9ce57c8f155e?auto=format&fit=crop&w=900&q=70"
+  },
+  {
+    id: "mercado-89",
+    name: "Mercado 89 Coyoacan",
+    area: "Coyoacan",
+    address: "Allende S/N, Del Carmen",
+    lat: 19.3487,
+    lng: -99.1634,
+    category: "markets",
+    closing: "Reported daily around 8:00 AM-6:00 PM",
+    vibe: "Classic Coyoacan market for food, crafts, sweets, and post-Frida wandering.",
+    fit: ["market", "coyoacan", "food", "crafts"],
+    source: "https://culturacoyoacan.com/mercados/",
+    photo: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=900&q=70"
   },
   {
     id: "cosmopolis",
@@ -143,7 +259,8 @@ const places = [
     closing: "Fri-Sun closes 7:30 PM",
     vibe: "Vintage, accessories, snacks, piercing, art, plants. Very easy from the Airbnb.",
     fit: ["vintage", "trinkets", "market", "walkable"],
-    source: "https://cosmopolisbazar.com/"
+    source: "https://cosmopolisbazar.com/",
+    photo: "https://images.unsplash.com/photo-1528698827591-e19ccd7bc23d?auto=format&fit=crop&w=900&q=70"
   },
   {
     id: "bazar-oro",
@@ -156,7 +273,8 @@ const places = [
     closing: "Best by afternoon; semi-permanent street bazar",
     vibe: "Clothes, indie designers, gifts, artisan goods, and casual food without a long detour.",
     fit: ["vintage", "market", "trinkets", "walkable"],
-    source: "https://mexicocity.cdmx.gob.mx/venues/bazar-del-oro/?lang=en"
+    source: "https://mexicocity.cdmx.gob.mx/venues/bazar-del-oro/?lang=en",
+    photo: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=900&q=70"
   },
   {
     id: "lagunilla",
@@ -169,7 +287,8 @@ const places = [
     closing: "Sunday antiques run roughly 9:00 AM-3:00 PM",
     vibe: "Final hunt: vintage objects, records, oddities, art, and bargaining.",
     fit: ["flea market", "vintage", "collectibles", "sunday"],
-    source: "https://www.tourme.app/mx/blog/mercado-de-lagunilla-mexico-city-guide"
+    source: "https://www.tourme.app/mx/blog/mercado-de-lagunilla-mexico-city-guide",
+    photo: "https://images.unsplash.com/photo-1519302959554-a75be0afc82a?auto=format&fit=crop&w=900&q=70"
   },
   {
     id: "mercado-100",
@@ -220,18 +339,6 @@ const places = [
     closing: "Mall hours usually evening; use as flexible free-ish viewpoint",
     vibe: "Easy free-access mall terrace near Zona Rosa and Roma.",
     fit: ["free rooftop", "photo", "quick stop"]
-  },
-  {
-    id: "biblioteca-vasconcelos",
-    name: "Biblioteca Vasconcelos",
-    area: "Buenavista",
-    address: "Eje 1 Norte S/N",
-    lat: 19.4475,
-    lng: -99.1517,
-    category: "photo",
-    closing: "Usually closes 7:30 PM; verify day-of",
-    vibe: "Famous floating-books photo spot, free, close to La Lagunilla/Buenavista.",
-    fit: ["free", "photo", "architecture"]
   },
   {
     id: "parque-mexico",
@@ -312,36 +419,18 @@ const days = [
     id: "thu",
     label: "Thu Jul 23",
     short: "Thu",
-    mood: "Arrive + Roma treasure walk",
-    anchor: "LAX to MEX lands 5:20 AM",
-    focus: ["airbnb", "cardinal", "kawaii-roma", "panini", "parque-mexico", "reforma-222", "churreria"],
+    mood: "Arrival + Chapultepec",
+    anchor: "12:30 AM LAX -> 5:20 AM MEX",
+    focus: ["airbnb", "anthropology", "chapultepec-zoo"],
     blocks: [
       {
-        id: "thu-morning",
-        time: "Morning",
-        title: "Land, breathe, coffee near base",
-        recommended: "6:30-10:30 AM",
-        closing: "Cafe hours vary; keep this low pressure",
-        placeIds: ["airbnb", "cardinal"],
-        tasks: ["Immigration + bags", "Ride to Roma Norte", "Coffee and easy breakfast", "Drop bags if possible"]
-      },
-      {
-        id: "thu-afternoon",
-        time: "Early afternoon",
-        title: "Roma Norte mini-hunt",
-        recommended: "12:00-3:30 PM",
-        closing: "Kawaii shop reported closes 6:00 PM; Panini closes 8:00 PM",
-        placeIds: ["kawaii-roma", "panini", "parque-mexico"],
-        tasks: ["Walk Alvaro Obregon/Orizaba", "Check Kawaii shop cluster", "Park Mexico reset", "Save one dinner idea"]
-      },
-      {
-        id: "thu-evening",
-        time: "Evening",
-        title: "Sunset view without overdoing it",
-        recommended: "5:30-8:30 PM",
-        closing: "Reforma 222 mall terrace usually evening-friendly",
-        placeIds: ["reforma-222", "churreria"],
-        tasks: ["Quick Reforma terrace/photo stop", "Dinner close to Roma", "Churros if you still have room"]
+        id: "thu-list",
+        time: "Thu",
+        title: "Arrival + Chapultepec",
+        recommended: "",
+        closing: "",
+        placeIds: ["anthropology"],
+        tasks: ["12:30 AM LAX -> 5:20 AM MEX", "Bosque Chapultepec + Anthropology Museum"]
       }
     ]
   },
@@ -349,36 +438,18 @@ const days = [
     id: "fri",
     label: "Fri Jul 24",
     short: "Fri",
-    mood: "Frida day + Coyoacan color",
+    mood: "Frida + Roma bars",
     anchor: "Frida Kahlo Museum at 11:15 AM",
-    focus: ["airbnb", "frida", "alameda", "cosmopolis", "freaktees", "bazar-oro", "churreria"],
+    focus: ["airbnb", "frida", "mercado-89", "roma-bars"],
     blocks: [
       {
-        id: "fri-morning",
-        time: "Morning",
-        title: "Get to Casa Azul early",
-        recommended: "9:15-11:00 AM",
-        closing: "Museum opens 10:00 AM; your ticket is 11:15 AM",
-        placeIds: ["frida"],
-        tasks: ["Breakfast in Roma", "Leave about 9:45 AM", "Arrive with buffer", "Screenshot or download tickets"]
-      },
-      {
-        id: "fri-late-afternoon",
-        time: "Late afternoon",
-        title: "Coyoacan wander after Frida",
-        recommended: "12:30-4:30 PM",
-        closing: "Frida closes 6:00 PM; nearby museums vary",
-        placeIds: ["frida"],
-        tasks: ["Casa Azul visit", "Coyoacan plaza photos", "Snack or tostadas nearby", "Optional Anahuacalli add-on if included"]
-      },
-      {
-        id: "fri-evening",
-        time: "Evening",
-        title: "Back to Roma for collectibles",
-        recommended: "6:00-9:30 PM",
-        closing: "Cosmopolis closes 7:30 PM; Freak Tees closes 10:00 PM",
-        placeIds: ["cosmopolis", "freaktees", "bazar-oro"],
-        tasks: ["Hit Colima 124 if you make it by 7:30", "Look for tees/trinkets", "Late dinner near base"]
+        id: "fri-list",
+        time: "Fri",
+        title: "Frida + Roma bars",
+        recommended: "",
+        closing: "",
+        placeIds: ["frida", "roma-bars"],
+        tasks: ["Frida Kahlo Museum 11:15 AM", "Roma Norte bars 10:00 PM"]
       }
     ]
   },
@@ -386,36 +457,18 @@ const days = [
     id: "sat",
     label: "Sat Jul 25",
     short: "Sat",
-    mood: "Surreal architecture day",
+    mood: "Quetzalcóatl + romantic date",
     anchor: "Parque Quetzalcoatl at 1:15 PM",
-    focus: ["airbnb", "maque", "quetzalcoatl", "hello-kitty-cafe", "terraza-cha-cha-cha", "churreria"],
+    focus: ["airbnb", "quetzalcoatl", "romantic-date"],
     blocks: [
       {
-        id: "sat-morning",
-        time: "Morning",
-        title: "Slow breakfast, no rushed detours",
-        recommended: "9:00-11:15 AM",
-        closing: "Parque visit is guided; plan car/taxi",
-        placeIds: ["maque", "airbnb"],
-        tasks: ["Breakfast close to Airbnb", "Charge phones", "Pack water and comfortable shoes", "Confirm driver/taxi timing"]
-      },
-      {
-        id: "sat-afternoon",
-        time: "Early afternoon",
-        title: "Parque Quetzalcoatl",
-        recommended: "12:00-3:45 PM",
-        closing: "Guided visit lasts about 2 hours; no public drop-in",
-        placeIds: ["quetzalcoatl"],
-        tasks: ["Leave Roma around noon", "Arrive with reservation ready", "Wear shoes for uneven terrain", "No pro camera/stabilizer/drone"]
-      },
-      {
-        id: "sat-night",
-        time: "Night",
-        title: "Photo dinner or sweet decompression",
-        recommended: "6:30-10:30 PM",
-        closing: "Hello Kitty Cafe closes 7:30 PM; rooftop hours vary",
-        placeIds: ["hello-kitty-cafe", "terraza-cha-cha-cha", "churreria"],
-        tasks: ["Choose cute dessert or skyline dinner", "Save receipts/tickets", "Update Sunday market targets"]
+        id: "sat-list",
+        time: "Sat",
+        title: "Quetzalcóatl + romantic date",
+        recommended: "",
+        closing: "",
+        placeIds: ["quetzalcoatl", "romantic-date"],
+        tasks: ["Parque Quetzalcóatl 1:15 PM", "Romantic date"]
       }
     ]
   },
@@ -423,36 +476,18 @@ const days = [
     id: "sun",
     label: "Sun Jul 26",
     short: "Sun",
-    mood: "Checkout + final treasure sweep",
-    anchor: "Airbnb checkout 11:00 AM; MEX to LAX departs 7:55 PM",
-    focus: ["airbnb", "mercado-100", "lagunilla", "simicasa", "biblioteca-vasconcelos", "alameda", "pokeshop"],
+    mood: "Fly home",
+    anchor: "7:55 PM MEX -> 10:50 PM LAX",
+    focus: ["airbnb"],
     blocks: [
       {
-        id: "sun-morning",
-        time: "Morning",
-        title: "Pack, checkout, pick one market",
-        recommended: "8:30-11:30 AM",
-        closing: "Checkout 11:00 AM",
-        placeIds: ["airbnb", "mercado-100", "lagunilla"],
-        tasks: ["Pack before breakfast", "Checkout by 11:00 AM", "Store luggage if possible", "Choose Mercado el 100 or La Lagunilla"]
-      },
-      {
-        id: "sun-afternoon",
-        time: "Early afternoon",
-        title: "Last collectibles before airport",
-        recommended: "12:00-3:30 PM",
-        closing: "La Lagunilla antiques wind down around 3:00 PM",
-        placeIds: ["lagunilla", "simicasa", "biblioteca-vasconcelos"],
-        tasks: ["Hunt vintage/oddities", "Optional Biblioteca Vasconcelos photo stop", "Grab a final snack", "Start airport buffer planning"]
-      },
-      {
-        id: "sun-evening",
-        time: "Evening",
-        title: "Airport buffer",
-        recommended: "4:30-7:55 PM",
-        closing: "Flight departs 7:55 PM from MEX T1",
+        id: "sun-list",
+        time: "Sun",
+        title: "Fly home",
+        recommended: "",
+        closing: "",
         placeIds: [],
-        tasks: ["Leave central CDMX with generous traffic buffer", "Be at T1 by roughly 5:30 PM", "Download boarding passes", "Final checklist sweep"]
+        tasks: ["Open slot", "7:55 PM MEX -> 10:50 PM LAX"]
       }
     ]
   }
@@ -474,11 +509,26 @@ const categoryIcons = {
 
 const initialState = {
   checked: {},
-  saved: ["airbnb", "frida", "quetzalcoatl", "simicasa", "cosmopolis"],
+  saved: [
+    "airbnb",
+    "biblioteca-vasconcelos",
+    "casa-snoopy",
+    "hello-kitty-cafe",
+    "mibimbo",
+    "lagunilla",
+    "mercado-89",
+    "chapultepec-zoo",
+    "anthropology",
+    "frida",
+    "roma-bars",
+    "quetzalcoatl",
+    "romantic-date"
+  ],
   notes: {},
   customPlaces: []
 };
-const storageKey = "cdmx-trip-state-v3";
+const defaultSavedIds = initialState.saved;
+const storageKey = "cdmx-trip-state-v5";
 
 function mapsUrl(place) {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${place.name} ${place.address} Mexico City`)}`;
@@ -538,15 +588,24 @@ function App() {
   const selectedPlace = [...allPlaces, ...searchResults].find((place) => place.id === selectedPlaceId) || base;
   const origin = originMode === "current" && position ? position : base;
 
+  const approvedPlaces = useMemo(() => {
+    const approved = new Set([...(state.saved || []), ...defaultSavedIds]);
+    return allPlaces.filter((place) => approved.has(place.id));
+  }, [allPlaces, state.saved]);
+
   const dayPlaces = useMemo(() => {
-    if (mapDay === "all") return allPlaces;
+    if (mapDay === "all") return approvedPlaces;
     const day = days.find((item) => item.id === mapDay) || days[0];
-    return allPlaces.filter((place) => day.focus.includes(place.id) || place.dayId === mapDay);
-  }, [allPlaces, mapDay]);
+    return approvedPlaces.filter((place) => day.focus.includes(place.id) || place.dayId === mapDay);
+  }, [approvedPlaces, mapDay]);
 
   const mapPlaces = dayPlaces;
   const mapDisplayPlaces = useMemo(() => [...mapPlaces, ...searchResults], [mapPlaces, searchResults]);
-  const savedPlaces = useMemo(() => allPlaces.filter((place) => state.saved.includes(place.id)), [allPlaces, state.saved]);
+  const savedPlaces = approvedPlaces;
+  const recommendedPlaces = useMemo(() => {
+    const approved = new Set(approvedPlaces.map((place) => place.id));
+    return allPlaces.filter((place) => !approved.has(place.id)).slice(0, 8);
+  }, [allPlaces, approvedPlaces]);
 
   const selectedAdvice = travelAdvice(origin, selectedPlace);
 
@@ -619,7 +678,8 @@ function App() {
     let cancelled = false;
     const timer = window.setTimeout(async () => {
       setSearchStatus("searching");
-      const proximity = `${origin.lng},${origin.lat}`;
+      const searchCenter = originMode === "current" && position ? position : selectedPlace || base;
+      const proximity = `${searchCenter.lng},${searchCenter.lat}`;
       try {
         if (!MAPBOX_TOKEN) throw new Error("Missing Mapbox token");
         const params = new URLSearchParams({
@@ -897,13 +957,14 @@ function App() {
             </button>
 
             <div className="drawer-body">
+              <img className="place-photo" src={selectedPlace.photo || base.photo} alt="" />
               <div className="compact-place">
                 <div className="place-icon">
                   {selectedPlace.id === "airbnb" ? <Home size={17} /> : React.createElement(categoryIcons[selectedPlace.category] || MapPin, { size: 17 })}
                 </div>
                 <div>
                   <strong>{selectedPlace.id === "airbnb" ? "Home" : selectedPlace.name}</strong>
-                  <span>{selectedAdvice.eta} · {selectedAdvice.mode} from {originMode === "current" && position ? "Here" : "Home"}</span>
+                  <span>{selectedAdvice.eta} · {selectedAdvice.detail} · {selectedAdvice.mode} from {originMode === "current" && position ? "Here" : "Home"}</span>
                 </div>
                 <button className="icon-button" onClick={() => toggleSave(selectedPlace.id)} aria-label="Save place">
                   <Heart size={17} fill={state.saved.includes(selectedPlace.id) ? "currentColor" : "none"} />
@@ -915,7 +976,7 @@ function App() {
 
               <label className="search-box">
                 <Search size={17} />
-                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search nearby places..." />
+                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={`Search near ${originMode === "current" && position ? "here" : selectedPlace.id === "airbnb" ? "home" : selectedPlace.name}`} />
               </label>
 
               <div className="recommendations">
@@ -939,6 +1000,31 @@ function App() {
                             toggleSave(place.id);
                           }}>
                             <Heart size={16} fill={state.saved.includes(place.id) ? "currentColor" : "none"} />
+                          </i>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {!query.trim() && recommendedPlaces.length > 0 && (
+                  <div className="result-section">
+                    <p>Recommendations to approve</p>
+                    {recommendedPlaces.map((place) => {
+                      const Icon = categoryIcons[place.category] || Sparkles;
+                      const advice = travelAdvice(origin, place);
+                      return (
+                        <button key={place.id} onClick={() => setSelectedPlaceId(place.id)}>
+                          <Icon size={17} />
+                          <span>
+                            <strong>{place.name}</strong>
+                            <small>{advice.eta} · {advice.mode} · heart to map</small>
+                          </span>
+                          <i onClick={(event) => {
+                            event.stopPropagation();
+                            toggleSave(place.id);
+                          }}>
+                            <Heart size={16} />
                           </i>
                         </button>
                       );
